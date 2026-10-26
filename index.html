@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的待办</title>
+</head>
+<body>
+  <div style="font-family: sans-serif; padding: 20px; max-width: 400px; margin: auto;">
+    <h2>我的待办事项</h2>
+    <input type="text" id="taskInput" placeholder="输入待办..." style="padding: 8px; width: 60%;">
+    <button onclick="addTask()" style="padding: 8px;">添加</button>
+    <ul id="taskList" style="list-style: none; padding: 0; margin-top: 20px;"></ul>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // ⚠️ 注意：一定要替换成你自己的！！！
+    const SUPABASE_URL = 'https://gqpecqvpzivlarhvzsgl.supabase.co/rest/v1/'; 
+    const SUPABASE_KEY = 'sb_publishable_3IEOz5yOV1Li8pIW5bUFvA_ZKyZXYfw'; 
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function fetchTasks() {
+      const { data, error } = await supabase.from('todos').select('*');
+      if (!error) {
+        document.getElementById('taskList').innerHTML = data.map(item => `<li style="background:#f4f4f4; padding:10px; margin:5px 0; border-radius:5px;">${item.task}</li>`).join('');
+      }
+    }
+
+    async function addTask() {
+      const input = document.getElementById('taskInput');
+      if (!input.value) return;
+      const { error } = await supabase.from('todos').insert([{ task: input.value }]);
+      if (!error) {
+        input.value = '';
+        fetchTasks(); 
+      } else {
+        alert('出错了，检查控制台');
+      }
+    }
+    fetchTasks();
+  </script>
+</body>
+  </html>
