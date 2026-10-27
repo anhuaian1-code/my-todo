@@ -1,0 +1,38 @@
+name: Generate Android Keystore
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Keystore and Base64
+        run: |
+          # 这里是你的密码和别名，你可以改成自己想要的
+          STORE_PASS="123456"
+          KEY_PASS="123456"
+          ALIAS="mykey"
+          
+          # 生成 JKS 文件
+          keytool -genkeypair -v -keystore release.jks -alias $ALIAS -keyalg RSA -keysize 2048 -validity 10000 -storepass $STORE_PASS -keypass $KEY_PASS -dname "CN=MobileUser, OU=Dev, O=Self, L=City, ST=State, C=CN"
+          
+          # 转换为 Base64
+          base64 -w 0 release.jks > keystore_base64.txt
+          
+          # 在日志里打印出密码，方便你核对
+          echo "==== 你的密码和别名 ===="
+          echo "库密码 (STORE_PASS): $STORE_PASS"
+          echo "密钥密码 (KEY_PASS): $KEY_PASS"
+          echo "别名 (ALIAS): $ALIAS"
+          echo "========================"
+          
+          # 打包准备上传
+          mkdir output
+          mv release.jks keystore_base64.txt output/
+
+      - name: Upload Keys
+        uses: actions/upload-artifact@v4
+        with:
+          name: keystore-files
+          path: output/
